@@ -1,5 +1,4 @@
 import express from "express";
-import axios from "axios";
 
 const router = express.Router();
 
@@ -7,25 +6,24 @@ router.get("/nearby", async (req, res) => {
   try {
     const { lat, lng } = req.query;
 
-    const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
-      {
-        params: {
-          location: `${lat},${lng}`,
-          radius: 5000,
-          type: "hospital",
-          key: process.env.GOOGLE_MAPS_API_KEY,
-        },
-      }
-    );
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      return res.json([]);
+    }
 
-    console.log(response.data);
+    const url = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json");
+    url.searchParams.set("location", `${lat},${lng}`);
+    url.searchParams.set("radius", "5000");
+    url.searchParams.set("type", "hospital");
+    url.searchParams.set("key", process.env.GOOGLE_MAPS_API_KEY);
 
-    res.json(response.data.results);
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    res.json(data.results || []);
   } catch (error) {
-    console.log(error);
     res.status(500).json({
-      message: "Error fetching places",
+      success: false,
+      message: "Error fetching places from Google Maps API",
     });
   }
 });

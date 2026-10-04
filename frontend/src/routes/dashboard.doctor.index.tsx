@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, Calendar, Video, Clock, IndianRupee, Star, CheckCircle2, ArrowUpRight } from "lucide-react";
-import axios from "axios";
+import { fetchDoctorAppointmentsApi } from "@/services/api";
 
 export const Route = createFileRoute("/dashboard/doctor/")({
   head: () => ({ meta: [{ title: "Doctor Overview — DoctorFind AI" }] }),
@@ -24,17 +24,7 @@ export default function DoctorDashboardOverview() {
         setDoctor(parsed);
         fetchDoctorAppointments(parsed._id || parsed.name);
       } else {
-        const defaultDoc = {
-          _id: "doc-1",
-          name: "Dr. Ananya Sharma",
-          specialization: "Cardiologist",
-          hospital: "Apollo Gleneagles Hospital",
-          profileImage: defaultAvatar,
-          fees: 800,
-          rating: 4.9
-        };
-        setDoctor(defaultDoc);
-        fetchDoctorAppointments("doc-1");
+        fetchDoctorAppointments();
       }
     } catch (err) {
       console.error(err);
@@ -42,53 +32,12 @@ export default function DoctorDashboardOverview() {
     }
   }, []);
 
-  const fetchDoctorAppointments = async (docId: string) => {
+  const fetchDoctorAppointments = async (docId?: string) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/appointments/doctor/${docId}`);
-      if (res.data?.appointments && res.data.appointments.length > 0) {
-        setAppointments(res.data.appointments);
-      } else {
-        setAppointments([
-          {
-            _id: "apt-101",
-            patientName: "Rahul Verma",
-            patientAge: 29,
-            patientGender: "Male",
-            appointmentDate: "Today",
-            appointmentTime: "10:30 AM",
-            mode: "Online",
-            status: "Confirmed",
-            symptoms: "Occasional chest tightness and shortness of breath after exercise",
-            videoCallUrl: "https://meet.jit.si/DoctorFindAI-Consult-101",
-            consultationFee: 800
-          },
-          {
-            _id: "apt-102",
-            patientName: "Priya Mukherjee",
-            patientAge: 34,
-            patientGender: "Female",
-            appointmentDate: "Today",
-            appointmentTime: "11:30 AM",
-            mode: "In-Person",
-            status: "Confirmed",
-            symptoms: "High blood pressure follow-up & medication review",
-            consultationFee: 800
-          },
-          {
-            _id: "apt-103",
-            patientName: "Amitabh Sen",
-            patientAge: 52,
-            patientGender: "Male",
-            appointmentDate: "Tomorrow",
-            appointmentTime: "04:00 PM",
-            mode: "Online",
-            status: "Pending",
-            symptoms: "ECG report evaluation & cholesterol advice",
-            videoCallUrl: "https://meet.jit.si/DoctorFindAI-Consult-103",
-            consultationFee: 800
-          }
-        ]);
+      const res = await fetchDoctorAppointmentsApi(docId);
+      if (res?.appointments && res.appointments.length > 0) {
+        setAppointments(res.appointments);
       }
     } catch (err) {
       console.error(err);

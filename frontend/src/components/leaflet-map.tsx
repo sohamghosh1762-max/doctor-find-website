@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { fetchGooglePlacesNearby } from "@/services/api";
 
 const hospitalIcon = L.divIcon({
   className: "",
@@ -53,13 +53,9 @@ const fetchLocations = async () => {
   try {
     if (!userLat || !userLng) return;
 
-const res = await axios.get(
-  `http://localhost:5000/api/google-places/nearby?lat=${userLat}&lng=${userLng}`
-);
+const res = await fetchGooglePlacesNearby(userLat, userLng);
 
-console.log(res.data);
-
-    const places = res.data.map(
+    const places = (res.data || []).map(
   (place: any) => ({
     name: place.name,
     address: place.vicinity,

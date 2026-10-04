@@ -5,38 +5,44 @@ const notificationSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      index: true,
     },
 
     title: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     message: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     type: {
       type: String,
-      enum: ["appointment", "medicine", "message", "report", "prescription"],
-      default: "appointment"
+      enum: ["appointment", "medicine", "message", "report", "prescription", "system"],
+      default: "appointment",
     },
 
     linkId: {
       type: String,
-      default: ""
+      default: "",
     },
 
     read: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+      index: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-export default mongoose.model("Notification", notificationSchema);
+notificationSchema.index({ user: 1, read: 1, createdAt: -1 });
+
+export default mongoose.model("Notification", notificationSchema);

@@ -2,9 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import heroDoctor from "@/assets/hero-doctor.jpg";
-
 import { useState } from "react";
-import axios from "axios";
+import { loginApi } from "@/services/api";
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -15,59 +14,39 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const res = await loginApi({
+        email,
+        password,
+      });
 
-      console.log(res.data);
-
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
 
       alert("Login Successful");
 
-      if (res.data.user.role === "admin") {
-  navigate({
-    to: "/dashboard/admin",
-  });
-
-} else if (
-  res.data.user.role === "doctor"
-) {
-  navigate({
-    to: "/dashboard/doctor",
-  });
-
-} else {
-  navigate({
-    to: "/dashboard/patient",
-  });
-}
+      if (res.user.role === "admin") {
+        navigate({
+          to: "/dashboard/admin",
+        });
+      } else if (res.user.role === "doctor") {
+        localStorage.setItem("doctorToken", res.token);
+        localStorage.setItem("doctor", JSON.stringify(res.user));
+        navigate({
+          to: "/dashboard/doctor",
+        });
+      } else {
+        navigate({
+          to: "/patient/dashboard",
+        });
+      }
     } catch (error: any) {
-      console.log(error.response?.data);
-
-      alert(
-        error.response?.data?.message ||
-          "Login failed"
-      );
+      alert(error.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -75,9 +54,7 @@ function Login() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-
       {/* Left Side Image */}
-
       <div className="relative hidden lg:block">
         <img
           src={heroDoctor}
@@ -95,16 +72,13 @@ function Login() {
           </h2>
 
           <p className="mt-3 max-w-sm text-white/80">
-            Continue your healthcare journey
-            with intelligent care.
+            Continue your healthcare journey with intelligent care.
           </p>
         </div>
       </div>
 
       {/* Login Form */}
-
       <div className="grid place-items-center p-8">
-
         <motion.div
           initial={{
             opacity: 0,
@@ -134,8 +108,7 @@ function Login() {
           </h1>
 
           <p className="mt-2 text-sm text-muted-foreground">
-            Welcome back. Please enter your
-            details.
+            Welcome back. Please enter your details.
           </p>
 
           <form
@@ -145,9 +118,7 @@ function Login() {
               handleLogin();
             }}
           >
-
             {/* Email */}
-
             <div>
               <label className="text-sm font-medium">
                 Email
@@ -155,17 +126,15 @@ function Login() {
 
               <input
                 type="email"
+                required
                 value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal/30"
                 placeholder="you@example.com"
               />
             </div>
 
             {/* Password */}
-
             <div>
               <label className="text-sm font-medium">
                 Password
@@ -173,31 +142,25 @@ function Login() {
 
               <input
                 type="password"
+                required
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal/30"
                 placeholder="••••••••"
               />
             </div>
 
             {/* Submit */}
-
             <button
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-gradient-to-r from-teal to-[oklch(0.55_0.18_260)] py-2.5 text-sm font-semibold text-white shadow transition hover:opacity-90"
             >
-              {loading
-                ? "Signing In..."
-                : "Sign In"}
+              {loading ? "Signing In..." : "Sign In"}
             </button>
-
           </form>
 
           {/* Signup */}
-
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link
@@ -208,32 +171,30 @@ function Login() {
             </Link>
           </p>
 
-          {/* Demo Buttons */}
-
+          {/* Direct Role Portals */}
           <div className="mt-6 flex gap-2 text-xs">
             <Link
-              to="/dashboard/patient"
+              to="/patient/dashboard"
               className="flex-1 rounded-lg border py-2 text-center hover:bg-accent"
             >
-              Patient Demo
+              Patient Portal
             </Link>
 
             <Link
-  to="/doctor-login"
-  className="rounded-lg border py-2 text-center hover:bg-accent"
->
-  Doctor Login
-</Link>
+              to="/doctor-login"
+              className="rounded-lg border py-2 text-center hover:bg-accent"
+            >
+              Doctor Login
+            </Link>
 
             <Link
-  to="/admin-login"
-  className="flex-1 rounded-lg border py-2 text-center hover:bg-accent"
->
-  Admin
-</Link>
+              to="/admin-login"
+              className="flex-1 rounded-lg border py-2 text-center hover:bg-accent"
+            >
+              Admin Portal
+            </Link>
           </div>
         </motion.div>
-
       </div>
     </div>
   );

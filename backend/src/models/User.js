@@ -4,134 +4,145 @@ const userSchema = new mongoose.Schema(
   {
     patientId: {
       type: String,
-      default: () => "PAT-" + Math.floor(100000 + Math.random() * 900000)
+      default: () => "PAT-" + Math.floor(100000 + Math.random() * 900000),
+      index: true,
     },
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     email: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
     },
 
     phone: {
       type: String,
-      default: "+91 98765 43210"
+      default: "+91 98765 43210",
+      trim: true,
     },
 
     password: {
       type: String,
-      required: true
+      required: true,
     },
 
     role: {
       type: String,
       enum: ["patient", "doctor", "admin"],
-      default: "patient"
+      default: "patient",
+      index: true,
     },
 
     profileImage: {
       type: String,
-      default: ""
+      default: "",
     },
 
     gender: {
       type: String,
-      default: "Male"
+      default: "Male",
     },
 
     dateOfBirth: {
       type: String,
-      default: "1995-08-15"
+      default: "1995-08-15",
     },
 
     bloodGroup: {
       type: String,
-      default: "O+"
+      default: "O+",
     },
 
     address: {
       type: String,
-      default: "72/A Park Street, Flat 4B, Kolkata, West Bengal 700016"
+      default: "72/A Park Street, Flat 4B, Kolkata, West Bengal 700016",
     },
 
     city: {
       type: String,
-      default: "Kolkata"
+      default: "Kolkata",
     },
 
     state: {
       type: String,
-      default: "West Bengal"
+      default: "West Bengal",
     },
 
     pincode: {
       type: String,
-      default: "700016"
+      default: "700016",
     },
 
     height: {
       type: Number,
-      default: 175 // cm
+      default: 175, // cm
     },
 
     weight: {
       type: Number,
-      default: 70 // kg
+      default: 70, // kg
     },
 
     emergencyContact: {
       name: { type: String, default: "Sunita Verma" },
       relationship: { type: String, default: "Mother" },
-      phone: { type: String, default: "+91 98765 99999" }
+      phone: { type: String, default: "+91 98765 99999" },
     },
 
     insurance: {
       provider: { type: String, default: "Star Health Insurance" },
       policyNumber: { type: String, default: "SH-987214-X" },
       coverage: { type: String, default: "₹5,00,000" },
-      expiry: { type: String, default: "2027-12-31" }
+      expiry: { type: String, default: "2027-12-31" },
     },
 
     medicalConditions: {
       type: [String],
-      default: ["Mild Hypertension", "Seasonal Asthma"]
+      default: ["Mild Hypertension", "Seasonal Asthma"],
     },
 
     allergies: {
       type: [String],
-      default: ["Penicillin", "Dust Mites"]
+      default: ["Penicillin", "Dust Mites"],
     },
 
     currentMedications: {
       type: [String],
-      default: ["Amlodipine 5mg", "Montair LC"]
+      default: ["Amlodipine 5mg", "Montair LC"],
     },
 
     preferredHospital: {
       type: String,
-      default: "Apollo Gleneagles Hospital"
+      default: "Apollo Gleneagles Hospital",
     },
 
     preferredDoctor: {
       type: String,
-      default: "Dr. Ananya Sharma"
+      default: "Dr. Ananya Sharma",
     },
 
     isVerified: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-export default mongoose.model(
-  "User",
-  userSchema
-);
+userSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    delete ret.password;
+    return ret;
+  },
+});
+
+export default mongoose.model("User", userSchema);

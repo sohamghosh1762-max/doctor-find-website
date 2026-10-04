@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import axios from "axios";
 import { LocateFixed } from "lucide-react";
+import { fetchNearbyLocations } from "@/services/api";
 
 function calculateHaversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return 0.1;
@@ -162,11 +162,7 @@ export function GoogleMapsComponent({
       const refLat = currentLoc?.lat ?? 22.6684;
       const refLng = currentLoc?.lng ?? 88.3813;
 
-      const queryUrl = currentLoc
-        ? `http://localhost:5000/api/location/nearby?lat=${currentLoc.lat}&lng=${currentLoc.lng}`
-        : "http://localhost:5000/api/location/nearby";
-
-      const res = await axios.get(queryUrl);
+      const res = await fetchNearbyLocations(refLat, refLng);
 
       let rawHospitals: any[] = res.data?.hospitals || [];
       let rawPharmacies: any[] = res.data?.pharmacies || [];

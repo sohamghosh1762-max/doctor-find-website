@@ -133,11 +133,11 @@ export default function SymptomCheckerDedicatedPage() {
               >
                 {analyzing ? (
                   <>
-                    <RefreshCw className="h-4 w-4 animate-spin" /> Analyzing Symptoms...
+                    <RefreshCw className="h-4 w-4 animate-spin" /> Assessing Symptoms...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" /> Run AI Diagnosis
+                    <Sparkles className="h-4 w-4" /> Run AI Assessment
                   </>
                 )}
               </button>
@@ -172,13 +172,13 @@ export default function SymptomCheckerDedicatedPage() {
 
                 {/* Possible Conditions */}
                 <div>
-                  <h3 className="font-display font-bold text-base mb-3">Possible Medical Conditions</h3>
+                  <h3 className="font-display font-bold text-base mb-3">Possible Concerns & Triage</h3>
                   <div className="space-y-3">
                     {currentAnalysis.possibleConditions?.map((item: any, idx: number) => (
                       <div key={idx} className="rounded-xl border p-4">
                         <div className="flex items-center justify-between font-semibold text-sm">
                           <span>{item.condition}</span>
-                          <span className="text-teal font-bold">{item.probability}</span>
+                          <span className="text-teal font-bold">{item.relevance || item.probability}</span>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
                       </div>

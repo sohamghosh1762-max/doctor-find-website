@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Clock, Calendar, Plus, Trash2, CheckCircle2, Save, AlertCircle } from "lucide-react";
-import axios from "axios";
+import { fetchDoctorSlots, updateDoctorSlots } from "@/services/api";
 
 export const Route = createFileRoute("/dashboard/doctor/availability")({
   head: () => ({ meta: [{ title: "Availability Settings — DoctorFind AI" }] }),
@@ -30,8 +30,11 @@ export default function AvailabilityPage() {
         docObj = JSON.parse(stored);
         setDoctor(docObj);
       }
-      const docId = docObj?._id || "doc-1";
-      fetchSlots(docId);
+      if (docObj?._id) {
+        fetchSlots(docObj._id);
+      } else {
+        setLoading(false);
+      }
     } catch (e) {
       console.error(e);
       setLoading(false);
@@ -41,8 +44,8 @@ export default function AvailabilityPage() {
   const fetchSlots = async (docId: string) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/doctors/${docId}/slots`);
-      const fetched = res.data?.availabilitySlots || res.data?.availability || [];
+      const res = await fetchDoctorSlots(docId);
+      const fetched = res.availabilitySlots || res.availability || [];
       if (fetched.length > 0) {
         setSlots(fetched);
       } else {
@@ -80,9 +83,14 @@ export default function AvailabilityPage() {
     try {
       setSaving(true);
       setSuccessMsg("");
-      const docId = doctor?._id || "doc-1";
+      const docId = doctor?._id;
 
-      await axios.put(`http://localhost:5000/api/doctors/${docId}/slots`, {
+      if (!docId) {
+        alert("Please log in as a doctor to update your availability.");
+        return;
+      }
+
+      await updateDoctorSlots(docId, {
         availabilitySlots: slots
       });
 
@@ -90,9 +98,7 @@ export default function AvailabilityPage() {
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err: any) {
       console.error("Save Error:", err);
-      alert("Saved locally to your doctor schedule.");
-      setSuccessMsg("Schedule updated.");
-      setTimeout(() => setSuccessMsg(""), 4000);
+      alert("Failed to save schedule slots.");
     } finally {
       setSaving(false);
     }

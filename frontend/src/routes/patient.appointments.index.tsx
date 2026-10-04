@@ -207,7 +207,7 @@ export default function PatientAppointmentsPage() {
 
                   {/* Actions */}
                   <div className="flex flex-wrap items-center gap-2 text-xs shrink-0">
-                    <Link to={`/patient/appointments/${a._id}`} className="rounded-xl border px-3.5 py-2 font-medium hover:bg-accent">
+                    <Link to="/patient/appointments/$id" params={{ id: String(a._id) }} className="rounded-xl border px-3.5 py-2 font-medium hover:bg-accent">
                       View Details
                     </Link>
                     {a.status !== "Cancelled" && (

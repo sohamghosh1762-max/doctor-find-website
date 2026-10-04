@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  fetchDoctors,
+  addDoctorApi,
+  updateDoctorApi,
+  deleteDoctorApi,
+} from "@/services/api";
 
 import {
   LayoutDashboard,
@@ -48,43 +53,33 @@ function DoctorsManagement() {
   profileImage: "",
 });
 
+  const loadDoctors = async () => {
+    try {
+      const res = await fetchDoctors();
+      setDoctors(res.doctors || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:5000/api/doctors"
-        );
-
-        setDoctors(res.data.doctors || []);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDoctors();
+    loadDoctors();
   }, []);
 
   const handleAddDoctor = async () => {
   try {
-    await axios.post(
-      "http://localhost:5000/api/doctors",
-      {
-        ...formData,
-        verified: true,
-      }
-    );
+    await addDoctorApi({
+      ...formData,
+      verified: true,
+    });
 
     alert("Doctor Added Successfully");
-
     setShowModal(false);
-
-    window.location.reload();
-
+    loadDoctors();
   } catch (error: any) {
     console.log(error);
-
     alert(
       error.response?.data?.message ||
       "Failed to add doctor"
@@ -120,9 +115,7 @@ const handleDelete = async (doctor: any) => {
   if (!confirmDelete) return;
 
   try {
-    await axios.delete(
-      `http://localhost:5000/api/doctors/${doctor._id}`
-    );
+    await deleteDoctorApi(doctor._id);
 
     setDoctors(
       doctors.filter(
@@ -139,20 +132,13 @@ const handleDelete = async (doctor: any) => {
 
 const handleUpdateDoctor = async () => {
   try {
-    await axios.put(
-      `http://localhost:5000/api/doctors/${selectedDoctor._id}`,
-      formData
-    );
+    await updateDoctorApi(selectedDoctor._id, formData);
 
     alert("Doctor Updated Successfully");
-
     setEditModal(false);
-
-    window.location.reload();
-
+    loadDoctors();
   } catch (error) {
     console.log(error);
-
     alert("Failed to update doctor");
   }
 };

@@ -4,10 +4,13 @@ import {
   getPatientProfile,
   updatePatientProfile,
   changePassword,
-  globalSearch
+  globalSearch,
 } from "../controllers/patientController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+router.use(protect);
 
 router.get("/dashboard", getPatientDashboard);
 router.get("/profile", getPatientProfile);

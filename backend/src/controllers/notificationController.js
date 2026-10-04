@@ -1,67 +1,57 @@
 import Notification from "../models/Notification.js";
-import User from "../models/User.js";
 
-// Create Notification
-export const createNotification = async (req, res) => {
-  try {
-    const notification = await Notification.create(req.body);
-
-    res.status(201).json({
-      success: true,
-      message: "Notification created",
-      notification
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// Get My Notifications
+// Get My Notifications (Protected - strictly scoped to req.user._id)
 export const getMyNotifications = async (req, res) => {
   try {
-    let userId = req.user?._id;
-    if (!userId) {
-      const defaultUser = await User.findOne({ email: "rahul@example.com" });
-      userId = defaultUser?._id;
-    }
+    const userId = req.user._id;
 
     const notifications = await Notification.find({ user: userId }).sort({ createdAt: -1 });
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const unreadCount = notifications.filter((n) => !n.read).length;
 
     res.status(200).json({
       success: true,
       count: notifications.length,
       unreadCount,
-      notifications
+      notifications,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Failed to fetch notifications.",
+      code: "NOTIFICATIONS_FETCH_ERROR",
     });
   }
 };
 
-// Mark as Read
+// Mark Notification as Read (Ownership Checked)
 export const markAsRead = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id } = req.params;
+
     if (id === "all") {
-      let userId = req.user?._id;
-      if (!userId) {
-        const defaultUser = await User.findOne({ email: "rahul@example.com" });
-        userId = defaultUser?._id;
-      }
       await Notification.updateMany({ user: userId }, { read: true });
-      return res.status(200).json({ success: true, message: "All notifications marked as read" });
+      return res.status(200).json({
+        success: true,
+        message: "All notifications marked as read.",
+      });
     }
 
     const notification = await Notification.findById(id);
     if (!notification) {
-      return res.status(404).json({ success: false, message: "Notification not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found.",
+        code: "NOTIFICATION_NOT_FOUND",
+      });
+    }
+
+    if (String(notification.user) !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update your own notifications.",
+        code: "UNAUTHORIZED_NOTIFICATION_UPDATE",
+      });
     }
 
     notification.read = true;
@@ -69,41 +59,60 @@ export const markAsRead = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Marked as read",
-      notification
+      message: "Notification marked as read.",
+      notification,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+      code: "NOTIFICATION_MARK_ERROR",
     });
   }
 };
 
-// Delete Notification
+// Delete Notification (Ownership Checked)
 export const deleteNotification = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { id } = req.params;
+
     if (id === "all") {
-      let userId = req.user?._id;
-      if (!userId) {
-        const defaultUser = await User.findOne({ email: "rahul@example.com" });
-        userId = defaultUser?._id;
-      }
       await Notification.deleteMany({ user: userId });
-      return res.status(200).json({ success: true, message: "All notifications cleared" });
+      return res.status(200).json({
+        success: true,
+        message: "All notifications cleared.",
+      });
+    }
+
+    const notification = await Notification.findById(id);
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found.",
+        code: "NOTIFICATION_NOT_FOUND",
+      });
+    }
+
+    if (String(notification.user) !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own notifications.",
+        code: "UNAUTHORIZED_NOTIFICATION_DELETE",
+      });
     }
 
     await Notification.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
-      message: "Notification deleted"
+      message: "Notification deleted successfully.",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+      code: "NOTIFICATION_DELETE_ERROR",
     });
   }
 };

@@ -1,13 +1,15 @@
+# Environment variables (CRITICAL: NEVER COMMIT SECRETS)
+.env
+.env.*
+!.env.example
+!.env.development.example
+!.env.production.example
+
 # Dependencies
 node_modules/
 .pnpm-store/
 
-# Environment variables (CRITICAL: DO NOT COMMIT SECRETS)
-.env
-.env.*
-!.env.example
-
-# Build and distribution
+# Build output
 dist/
 dist-ssr/
 build/
@@ -17,29 +19,69 @@ build/
 .lovable/
 .next/
 out/
-
-# Uploaded files
-backend/uploads/*
-!backend/uploads/.gitkeep
-uploads/*
-!uploads/.gitkeep
+.vite/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# OS & Editor files
+# Coverage & Tests
+coverage/
+playwright-report/
+test-results/
+
+# Runtime & Local DBs
+*.pid
+*.seed
+*.pid.lock
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploaded / Private user files
+uploads/*
+!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+storage/
+private/
+user-uploads/
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# IDE & Editor files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary & cache
+tmp/
+temp/
+.cache/
+.nitro/
+.wrangler/
+.dev.vars
+
+# Certificates & Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+service-account*.json
+firebase-adminsdk*.json
+
+# Local overrides
+*.local

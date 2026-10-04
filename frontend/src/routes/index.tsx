@@ -10,7 +10,7 @@ import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { StatCounter } from "@/components/stat-counter";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { fetchDoctors } from "@/services/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -69,24 +69,19 @@ function Landing() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-  const fetchDoctors = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/doctors"
-      );
-      console.log("Backend Doctors:", res.data.doctors);
+    const loadDoctors = async () => {
+      try {
+        const res = await fetchDoctors();
+        setDoctors(res.data?.doctors || []);
+      } catch (error) {
+        console.error("Error loading doctors:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setDoctors(res.data.doctors);
-      
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchDoctors();
-}, []);
+    loadDoctors();
+  }, []);
   if (loading) {
   return (
     <div className="flex min-h-screen items-center justify-center">

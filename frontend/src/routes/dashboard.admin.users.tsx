@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchAdminUsers } from "@/services/api";
 
 export const Route = createFileRoute(
   "/dashboard/admin/users"
@@ -21,11 +21,8 @@ function UsersManagement() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/auth/users"
-      );
-
-      setUsers(res.data.users || []);
+      const res = await fetchAdminUsers();
+      setUsers(res.users || []);
     } catch (error) {
       console.log(error);
     } finally {

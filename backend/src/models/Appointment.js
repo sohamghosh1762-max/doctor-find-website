@@ -5,74 +5,81 @@ const appointmentSchema = new mongoose.Schema(
     patient: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      index: true,
     },
 
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor"
+      ref: "Doctor",
+      index: true,
     },
 
     doctorName: {
       type: String,
-      default: "Dr. Ananya Sharma"
+      default: "Dr. Ananya Sharma",
     },
 
     doctorImage: {
       type: String,
-      default: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=300&auto=format&fit=crop"
+      default: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=300&auto=format&fit=crop",
     },
 
     specialization: {
       type: String,
-      default: "Cardiologist"
+      default: "Cardiologist",
     },
 
     hospital: {
       type: String,
-      default: "Apollo Gleneagles Hospital"
+      default: "Apollo Gleneagles Hospital",
     },
 
     appointmentDate: {
       type: String,
-      required: true
+      required: true,
+      index: true,
     },
 
     appointmentTime: {
       type: String,
-      required: true
+      required: true,
     },
 
     mode: {
       type: String,
       enum: ["Online", "Offline"],
-      default: "Online"
+      default: "Online",
     },
 
     status: {
       type: String,
       enum: ["Pending", "Confirmed", "Cancelled", "Completed"],
-      default: "Confirmed"
+      default: "Confirmed",
+      index: true,
     },
 
     symptoms: {
       type: String,
-      default: "Routine Health Checkup"
+      default: "Routine Health Checkup",
     },
 
     videoCallUrl: {
       type: String,
-      default: "https://meet.jit.si/DoctorFindAI-Call-982"
+      default: "",
     },
 
     consultationFee: {
       type: Number,
-      default: 800
-    }
+      default: 800,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-export default mongoose.model("Appointment", appointmentSchema);
+appointmentSchema.index({ patient: 1, appointmentDate: 1 });
+appointmentSchema.index({ doctor: 1, appointmentDate: 1 });
+
+export default mongoose.model("Appointment", appointmentSchema);

@@ -4,7 +4,7 @@ import { Star, Stethoscope, Search, Filter, MapPin, Building2, Video, CheckCircl
 import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { fetchDoctors } from "@/services/api";
 
 export const Route = createFileRoute("/doctors")({
   head: () => ({ meta: [{ title: "Find Doctors — DoctorFind AI" }, { name: "description", content: "Browse verified doctors by specialty and book instantly." }] }),
@@ -20,9 +20,9 @@ function DoctorsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const loadDoctors = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/doctors");
+        const res = await fetchDoctors();
         if (res.data?.doctors) {
           setDoctors(res.data.doctors);
         }
@@ -33,7 +33,7 @@ function DoctorsPage() {
       }
     };
 
-    fetchDoctors();
+    loadDoctors();
   }, []);
 
   const dynamicSpecialties = ["All", ...Array.from(new Set(doctors.map(d => d.specialization).filter(Boolean)))];

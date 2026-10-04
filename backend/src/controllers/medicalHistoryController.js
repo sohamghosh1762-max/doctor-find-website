@@ -1,60 +1,41 @@
 import MedicalHistory from "../models/MedicalHistory.js";
-import User from "../models/User.js";
+import { logAuditEvent } from "../services/auditService.js";
 
-// Create or Get My Medical History
+// Get My Medical History (Protected - req.user._id)
 export const getMyMedicalHistory = async (req, res) => {
   try {
-    let patientId = req.user?._id;
-    if (!patientId) {
-      const defaultUser = await User.findOne({ email: "rahul@example.com" });
-      patientId = defaultUser?._id;
-    }
+    const patientId = req.user._id;
 
     let history = await MedicalHistory.findOne({ patient: patientId });
 
     if (!history) {
       history = await MedicalHistory.create({
         patient: patientId,
-        bloodGroup: "O+",
-        allergies: ["Penicillin"],
-        chronicDiseases: ["Mild Hypertension"],
-        currentMedications: ["Amlodipine 5mg"],
-        timeline: [
-          {
-            year: 2026,
-            date: "15 July 2026",
-            title: "Cardiovascular Checkup & Hypertension Management",
-            type: "Checkup",
-            diagnosis: "Mild Essential Hypertension",
-            doctor: "Dr. Ananya Sharma",
-            hospital: "Apollo Gleneagles Hospital",
-            treatment: "Dietary sodium restriction & daily Amlodipine 5mg",
-            reports: ["Comprehensive Blood Panel"],
-            prescriptions: ["Amlodipine 5mg", "Telmisartan 40mg"]
-          }
-        ]
+        bloodGroup: req.user.bloodGroup || "O+",
+        allergies: req.user.allergies || ["None documented"],
+        chronicDiseases: req.user.medicalConditions || ["None"],
+        currentMedications: req.user.currentMedications || ["None"],
+        timeline: [],
       });
     }
 
     res.status(200).json({
       success: true,
-      history
+      history,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Failed to fetch medical history.",
+      code: "HISTORY_FETCH_ERROR",
     });
   }
 };
 
+// Add Timeline Entry (Protected)
 export const addTimelineEntry = async (req, res) => {
   try {
-    let patientId = req.user?._id;
-    if (!patientId) {
-      const defaultUser = await User.findOne({ email: "rahul@example.com" });
-      patientId = defaultUser?._id;
-    }
+    const patientId = req.user._id;
 
     let history = await MedicalHistory.findOne({ patient: patientId });
     if (!history) {
@@ -64,26 +45,31 @@ export const addTimelineEntry = async (req, res) => {
     history.timeline.push(req.body);
     await history.save();
 
+    await logAuditEvent({
+      req,
+      action: "TIMELINE_ENTRY_ADDED",
+      resource: "MedicalHistory",
+      resourceId: history._id,
+    });
+
     res.status(201).json({
       success: true,
       message: "Timeline entry added successfully",
-      history
+      history,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Failed to add timeline entry.",
+      code: "TIMELINE_ADD_ERROR",
     });
   }
 };
 
+// Update Medical History (Protected)
 export const updateMedicalHistory = async (req, res) => {
   try {
-    let patientId = req.user?._id;
-    if (!patientId) {
-      const defaultUser = await User.findOne({ email: "rahul@example.com" });
-      patientId = defaultUser?._id;
-    }
+    const patientId = req.user._id;
 
     const history = await MedicalHistory.findOneAndUpdate(
       { patient: patientId },
@@ -91,15 +77,23 @@ export const updateMedicalHistory = async (req, res) => {
       { new: true, upsert: true }
     );
 
+    await logAuditEvent({
+      req,
+      action: "MEDICAL_HISTORY_UPDATED",
+      resource: "MedicalHistory",
+      resourceId: history._id,
+    });
+
     res.status(200).json({
       success: true,
       message: "Medical history updated successfully",
-      history
+      history,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Failed to update medical history.",
+      code: "HISTORY_UPDATE_ERROR",
     });
   }
 };

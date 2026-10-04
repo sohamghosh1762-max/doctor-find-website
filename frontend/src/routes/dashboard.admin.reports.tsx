@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchAdminStats } from "@/services/api";
 import {
   ResponsiveContainer,
   BarChart,
@@ -35,13 +35,10 @@ function ReportsPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/admin/stats"
-      );
-
-      console.log("Stats API:", res.data);
-
-      setStats(res.data.stats);
+      const res = await fetchAdminStats();
+      if (res.stats) {
+        setStats(res.stats);
+      }
     } catch (error) {
       console.log(error);
     }

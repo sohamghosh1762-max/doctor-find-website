@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Star, ShieldCheck, Stethoscope, Building2, MapPin, Video, UserCheck, Calendar, Clock, CheckCircle2, ArrowLeft } from "lucide-react";
 import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
+import { fetchDoctorById, fetchDoctorSlots, createAppointment } from "@/services/api";
 
 export const Route = createFileRoute("/doctor/$id")({
   head: () => ({ meta: [{ title: "Book Doctor Appointment — DoctorFind AI" }] }),
@@ -49,20 +49,20 @@ function DoctorProfile() {
   const [bookingSuccess, setBookingSuccess] = useState<any>(null);
 
   useEffect(() => {
-    const fetchDoctor = async () => {
+    const loadDoctor = async () => {
       try {
         setLoading(true);
-        const doctorRes = await axios.get(`http://localhost:5000/api/doctors/${id}`);
+        const doctorRes = await fetchDoctorById(id);
         if (doctorRes.data?.doctor) {
           setDoctor(doctorRes.data.doctor);
         }
 
         try {
-          const slotRes = await axios.get(`http://localhost:5000/api/doctors/${id}/slots`);
+          const slotRes = await fetchDoctorSlots(id);
           const fetchedSlots = slotRes.data?.availabilitySlots || slotRes.data?.availability || [];
           setSlots(fetchedSlots);
         } catch (err) {
-          console.log("Using default slots fallback");
+          // Use default fallback slots
         }
       } catch (error) {
         console.error("Error loading doctor profile:", error);
@@ -71,7 +71,7 @@ function DoctorProfile() {
       }
     };
 
-    fetchDoctor();
+    loadDoctor();
   }, [id]);
 
   const handleBookAppointment = async () => {
@@ -82,33 +82,25 @@ function DoctorProfile() {
 
     try {
       setBookingLoading(true);
-      const token = localStorage.getItem("token");
-
-      const response = await axios.post(
-        "http://localhost:5000/api/appointments",
-        {
-          doctor: doctor?._id,
-          doctorName: doctor?.name,
-          doctorImage: doctor?.profileImage || defaultAvatar,
-          specialization: doctor?.specialization,
-          hospital: doctor?.hospital,
-          appointmentDate: selectedDate,
-          appointmentTime: selectedTime,
-          mode: mode,
-          symptoms: symptoms,
-          consultationFee: doctor?.fees || 800
-        },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        }
-      );
+      const response = await createAppointment({
+        doctor: doctor?._id,
+        doctorName: doctor?.name,
+        doctorImage: doctor?.profileImage || defaultAvatar,
+        specialization: doctor?.specialization,
+        hospital: doctor?.hospital,
+        appointmentDate: selectedDate,
+        appointmentTime: selectedTime,
+        mode: mode,
+        symptoms: symptoms,
+        consultationFee: doctor?.fees || 800
+      });
 
       if (response.data?.success) {
         setBookingSuccess(response.data.appointment);
       }
     } catch (error: any) {
       console.error("Booking Error:", error.response?.data);
-      alert(error.response?.data?.message || "Appointment booking failed. Please try again.");
+      alert(error.response?.data?.message || "Appointment booking failed. Please ensure you are logged in.");
     } finally {
       setBookingLoading(false);
     }

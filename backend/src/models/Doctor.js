@@ -5,166 +5,167 @@ const doctorSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     email: {
-  type: String,
-  required: true,
-  unique: true
-},
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
 
-password: {
-  type: String,
-  required: true,
-  default: "123456"
-},
+    password: {
+      type: String,
+      required: true,
+    },
 
-passwordChanged: {
-  type: Boolean,
-  default: false
-},
+    passwordChanged: {
+      type: Boolean,
+      default: false,
+    },
 
-phone: {
-  type: String,
-  required: true
-},
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
     specialization: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      index: true,
     },
 
     qualification: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     experience: {
       type: Number,
-      required: true
+      required: true,
     },
 
     hospital: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      index: true,
     },
 
     fees: {
       type: Number,
-      required: true
+      required: true,
     },
 
     location: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      index: true,
     },
 
     languages: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
 
     consultationMode: {
       type: String,
-      enum: [
-        "Online",
-        "Offline",
-        "Both"
-      ],
-      default: "Both"
+      enum: ["Online", "Offline", "Both"],
+      default: "Both",
     },
 
     availabilitySlots: [
-  {
-    day: {
-      type: String
-    },
-
-    startTime: {
-      type: String
-    },
-
-    endTime: {
-      type: String
-    },
-
-    slotDuration: {
-      type: Number,
-      default: 30
-    },
-
-    maxPatients: {
-      type: Number,
-      default: 10
-    }
-  }
-],
+      {
+        day: {
+          type: String,
+        },
+        startTime: {
+          type: String,
+        },
+        endTime: {
+          type: String,
+        },
+        slotDuration: {
+          type: Number,
+          default: 30,
+        },
+        maxPatients: {
+          type: Number,
+          default: 10,
+        },
+      },
+    ],
 
     licenseNumber: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     licenseCertificate: {
       type: String,
-      default: ""
+      default: "",
     },
 
     profileImage: {
       type: String,
-      default: ""
+      default: "",
     },
 
     about: {
       type: String,
-      default: ""
+      default: "",
     },
 
     verified: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true,
     },
 
     rating: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     totalReviews: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
+// Hash password before saving if modified
 doctorSchema.pre("save", async function () {
-
   if (!this.isModified("password")) {
     return;
   }
-
   const salt = await bcrypt.genSalt(10);
-
-  this.password = await bcrypt.hash(
-    this.password,
-    salt
-  );
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-doctorSchema.methods.matchPassword =
-  async function (enteredPassword) {
-    return await bcrypt.compare(
-      enteredPassword,
-      this.password
-    );
-  };
+// Compare password method
+doctorSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
-export default mongoose.model(
-  "Doctor",
-  doctorSchema
-);
+// Exclude password when serializing to JSON
+doctorSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    delete ret.password;
+    return ret;
+  },
+});
+
+export default mongoose.model("Doctor", doctorSchema);

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Activity, User, Mail, Lock, Phone, Calendar, MapPin, Heart } from "lucide-react";
+import { Activity } from "lucide-react";
 import heroDoctor from "@/assets/hero-doctor.jpg";
 import { useState } from "react";
-import axios from "axios";
+import { registerApi } from "@/services/api";
 
 export const Route = createFileRoute("/signup")({ component: Signup });
 
@@ -18,7 +18,7 @@ function Signup() {
     gender: "Male",
     dateOfBirth: "1998-05-20",
     bloodGroup: "O+",
-    address: ""
+    address: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,16 +33,18 @@ function Signup() {
       return;
     }
 
+    if (form.password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters long.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/register", {
-        ...form,
-        role: "patient"
-      });
+      const res = await registerApi(form);
 
-      if (res.data?.success) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+      if (res?.success) {
+        localStorage.setItem("token", res.token);
+        localStorage.setItem("user", JSON.stringify(res.user));
 
         alert("Account created successfully! Welcome to DoctorFind AI.");
         navigate({ to: "/patient/dashboard" });

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchMyAppointments } from "@/services/api";
 
 export const Route = createFileRoute("/my-appointments")({
   component: MyAppointments,
@@ -11,20 +11,10 @@ function MyAppointments() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const loadAppointments = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await axios.get(
-          "http://localhost:5000/api/appointments/my-appointments",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setAppointments(res.data.appointments);
+        const res = await fetchMyAppointments();
+        setAppointments(res.data?.appointments || []);
       } catch (error) {
         console.error(error);
       } finally {
@@ -32,7 +22,7 @@ function MyAppointments() {
       }
     };
 
-    fetchAppointments();
+    loadAppointments();
   }, []);
 
   if (loading) {

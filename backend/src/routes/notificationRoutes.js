@@ -1,17 +1,18 @@
 import express from "express";
 import {
-  createNotification,
   getMyNotifications,
   markAsRead,
-  deleteNotification
+  deleteNotification,
 } from "../controllers/notificationController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createNotification);
+router.use(protect);
+
 router.get("/", getMyNotifications);
-router.get("/my", getMyNotifications);
 router.patch("/:id/read", markAsRead);
+router.put("/:id/read", markAsRead);
 router.delete("/:id", deleteNotification);
 
 export default router;

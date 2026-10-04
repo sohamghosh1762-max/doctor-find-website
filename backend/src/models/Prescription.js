@@ -5,38 +5,42 @@ const prescriptionSchema = new mongoose.Schema(
     patient: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      index: true,
     },
 
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor"
+      ref: "Doctor",
+      index: true,
     },
 
     prescribingDoctor: {
       type: String,
-      default: "Dr. Ananya Sharma"
+      default: "Dr. Ananya Sharma",
     },
 
     doctorSpecialty: {
       type: String,
-      default: "Cardiologist"
+      default: "Cardiologist",
     },
 
     hospital: {
       type: String,
-      default: "Apollo Gleneagles Hospital"
+      default: "Apollo Gleneagles Hospital",
     },
 
     date: {
       type: String,
-      default: () => new Date().toISOString().split("T")[0]
+      default: () => new Date().toISOString().split("T")[0],
+      index: true,
     },
 
     status: {
       type: String,
       enum: ["Current", "Expired", "Completed"],
-      default: "Current"
+      default: "Current",
+      index: true,
     },
 
     medicines: [
@@ -45,24 +49,26 @@ const prescriptionSchema = new mongoose.Schema(
         dosage: { type: String, default: "650mg" },
         frequency: { type: String, default: "1-0-1" },
         duration: { type: String, default: "5 Days" },
-        instructions: { type: String, default: "Take after meals" }
-      }
+        instructions: { type: String, default: "Take after meals" },
+      },
     ],
 
     notes: {
       type: String,
-      default: "Maintain low sodium diet & monitor blood pressure regularly."
+      default: "Maintain low sodium diet & monitor blood pressure regularly.",
     },
 
     refillStatus: {
       type: String,
       enum: ["None", "Requested", "Approved"],
-      default: "None"
-    }
+      default: "None",
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-export default mongoose.model("Prescription", prescriptionSchema);
+prescriptionSchema.index({ patient: 1, createdAt: -1 });
+
+export default mongoose.model("Prescription", prescriptionSchema);

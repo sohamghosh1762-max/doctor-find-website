@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import axios from "axios";
 import { Building2, Pill, Navigation, Phone, MapPin, LocateFixed } from "lucide-react";
 import { GoogleMapsComponent } from "@/components/google-map";
 import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { useEffect, useState, useCallback } from "react";
+import { fetchNearbyLocations } from "@/services/api";
 
 export const Route = createFileRoute("/hospitals")({
   head: () => ({ meta: [{ title: "Hospitals & Pharmacies — DoctorFind AI" }] }),
@@ -123,8 +123,7 @@ function HospitalsPage() {
 
   useEffect(() => {
     if (userLat !== null && userLng !== null) {
-      axios
-        .get(`http://localhost:5000/api/location/nearby?lat=${userLat}&lng=${userLng}`)
+      fetchNearbyLocations(userLat, userLng)
         .then((res) => {
           if (res.data?.hospitals && res.data.hospitals.length > 0) {
             setHospitals(res.data.hospitals);
