@@ -20,6 +20,7 @@ build/
 .next/
 out/
 .vite/
+.vercel/
 
 # Logs
 logs/
